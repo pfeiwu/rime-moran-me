@@ -3,6 +3,9 @@
 # license: CC-BY-SA 4.0+
 # authors: 吕奉先 SunShine 小幽幽 ksqsf sky Kuroame
 
+# modified by kuroame
+# use huma-style 快符
+
 ---
 name: moran_fixed_simp
 version: "20241007"
@@ -21,8 +24,8 @@ encoder:
       formula: "AaBaCaCb"
     - length_in_range: [4, 32]
       formula: "AaBaCaZa"
-import_tables:
-  - moran_fixed.symbols
+# import_tables:
+#   - moran_fixed.symbols
 ...
 
 #----------标点符号----------#
@@ -31,31 +34,34 @@ import_tables:
 ？	;w
 （	;e
 ）	;r
-~	;t
+→	;t
 ·	;y
-『	;u
-』	;i
+~	;u
+——	;i
 〖	;o
 〗	;p
+
 # 第二排
 ！	;a
 ……	;s
-#重复上屏	;d
+、	;d
 “	;f
 ”	;g
-‘	;h
-’	;j
-——	;k
-%	;l
-；	;;
+『	;h
+』	;j
+‘	;k
+’	;l
+：	;
+；	;
+
 # 第三排
-。”	;z
-？”	;x
-！”	;c
-【	;v
-】	;b
-《	;n
-》	;m
+|	;z
+【	;x
+】	;c
+《	;v
+》	;b
+「	;n
+」	;m
 
 #----------词库----------#
 
@@ -10160,7 +10166,6 @@ D盘	dpj
 毒化	duhw
 大事化小	duhx
 大受欢迎	duhy
-但是	dui
 蠹	dui
 督察	duia
 滴水成冰	duib
@@ -24621,7 +24626,7 @@ I盘	ipj
 创造性	izx
 姹紫嫣红	izyh
 就	j	jqyj
-记	j	jiyj
+觉得	j	
 骄傲	ja
 桀骜不驯	jabx
 激昂慷慨	jakk
@@ -25068,7 +25073,6 @@ I盘	ipj
 缴租	jczu
 基层组织	jczv
 将	jd
-觉得	jd
 江岸	jdan
 绝大部分	jdbf
 绝对不会	jdbh
@@ -25974,7 +25978,7 @@ I盘	ipj
 机械	jixx
 记性	jixy
 畸形	jixy
-计	jiy
+记	jiy
 挤压	jiya
 积压	jiya
 挤轧	jiya
@@ -33451,7 +33455,6 @@ I盘	ipj
 凛	lndb
 林地	lndi
 临到	lndk
-淋	lndl
 粼	lndl
 潾	lndl
 临	lndo

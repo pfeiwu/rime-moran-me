@@ -1,0 +1,21 @@
+patch:
+  octagram/enable_for_fixed/__patch/grammar/language: zh-hans-t-essay-bgc
+  key_bindings/moran_switches:
+    __append:
+        - { when: has_menu, accept: "Control+s", toggle: traditionalization }
+        - { when: has_menu, accept: "Control+u", toggle: unicode_comment }
+        - { when: has_menu, accept: "Control+q", toggle: emoji }
+        - { when: composing, accept: "Control+x", toggle: extended_charset }
+        - { when: has_menu, accept: "Control+Shift+0", toggle: std_opencc }
+        - { when: has_menu, accept: "Control+i", toggle: chaifen }
+        - { when: has_menu, accept: "Control+period", toggle: pinyinhint }
+  key_bindings/moran_switches/__append/+:
+    - { when: has_menu, accept: "Control+d", send: "Shift+Delete" }
+
+  simplifier/option_name: traditionalization
+  simplifier/opencc_config: st.json
+  switches/@2/name: traditionalization
+  switches/@2/states: [汉字, 漢字]
+  fixed/dictionary: moran_fixed_simp
+  translator/dictionary: moran_fixed_simp
+  quick_repeat/input: "oj"

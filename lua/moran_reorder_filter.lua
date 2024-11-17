@@ -2,6 +2,7 @@
 -- Copyright (c) 2023, 2024 ksqsf
 --
 -- Ver: 0.1.4
+-- Modified by kuroame for the compatibility with huma-style 快符.
 --
 -- This file is part of Project Moran
 -- Licensed under GPLv3
@@ -28,7 +29,7 @@
 -- 必須與 moran_express_translator v0.5.0 以上版本聯用。
 
 local Top = {}
-
+local semicolon_codepoint =   utf8.codepoint("；", 1)
 function Top.init(env)
    -- At most THRESHOLD smart candidates are subject to reordering,
    -- for performance's sake.
@@ -50,8 +51,10 @@ function Top.func(t_input, env)
    local threshold = env.reorder_threshold
    for cand in t_input:iter() do
       if cand:get_genuine().type == "punct" then
-         yield(cand)
-         goto continue
+         if utf8.codepoint(cand.text, 1) ~=semicolon_codepoint then
+               yield(cand)
+             end
+            goto continue
       end
 
       if reorder_phase == 0 then
