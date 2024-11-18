@@ -1,0 +1,31 @@
+patch:
+  show_notifications_via_notification_center: false
+
+  app_options:
+      
+  style:
+    color_scheme: rurikon
+    candidate_list_layout: linear
+    label_font_point: 12
+    font_point: 16
+    inline_preedit: true
+    corner_radius: 5
+    candidate_format: "[label] [candidate]  [comment]"
+
+  preset_color_schemes:
+    rurikon:
+      name: rurikon
+      author: me
+      text_color: 0x424242 #黑灰
+      candidate_text_color: 0x424242 #黑灰
+      back_color: 0xF6F6F6 #白
+      border_color: 0x999999 #白
+      label_color: 0x424242 #黑灰
+      hilited_text_color: 0xFFFFFF #白
+      hilited_back_color: 0x844a16 #rurikon
+      comment_text_color: 0x999999 # 灰
+      hilited_candidate_text_color: 0xFFFFFF #白
+      hilited_comment_text_color: 0xFFFFFF #白
+      hilited_candidate_back_color: 0x844a16 #rurikon
+      hilited_label_color: 0x999999 # 灰
+
