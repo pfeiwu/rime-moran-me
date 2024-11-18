@@ -12,10 +12,15 @@ patch:
   key_bindings/moran_switches/__append/+:
     - { when: has_menu, accept: "Control+d", send: "Shift+Delete" }
 
+  speller/auto_select_pattern: ^;(\w|;)+
+  speller/alphabet: "abcdefghijklmnopqrstuvwxyz=;/"
   simplifier/option_name: traditionalization
-  simplifier/opencc_config: st.json
+  simplifier/opencc_config: s2t.json
   switches/@2/name: traditionalization
   switches/@2/states: [汉字, 漢字]
   fixed/dictionary: moran_fixed_simp
   translator/dictionary: moran_fixed_simp
+  recognizer/patterns/panacea: "^[a-z]*/{1,2}[a-z']*$" 
   quick_repeat/input: "oj"
+  moran/pin/enable: true
+  moran/pin/panacea/freestyle: true

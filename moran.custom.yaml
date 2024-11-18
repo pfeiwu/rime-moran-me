@@ -49,7 +49,7 @@ patch:
     - erase/^(.+?);(.+)$/ # 刪除原始編碼以加速檢索
 
   simplifier/option_name: traditionalization
-  simplifier/opencc_config: st.json
+  simplifier/opencc_config: s2t.json
   switches/@2/name: traditionalization
   switches/@2/states: [汉字, 漢字]
   fixed/dictionary: moran_fixed_simp
