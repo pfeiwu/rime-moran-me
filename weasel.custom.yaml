@@ -12,15 +12,15 @@ patch:
       author: me
       text_color: 0x424242 #黑灰
       candidate_text_color: 0x424242 #黑灰
-      back_color: 0xF6F6F6 #白
+      back_color: 0xf6f6f6 #白
       border_color: 0x999999 #灰
       shadow_color: 0x66000000 #黑
       label_color: 0x424242 #黑灰
-      hilited_text_color: 0xFFFFFF #白
+      hilited_text_color: 0xffffff #白
       hilited_back_color: 0x844a16 #rurikon
       comment_text_color: 0x999999 # 灰
-      hilited_candidate_text_color: 0xFFFFFF #白
-      hilited_comment_text_color: 0xFFFFFF #白
+      hilited_candidate_text_color: 0xffffff #白
+      hilited_comment_text_color: 0xffffff #白
       hilited_candidate_back_color: 0x844a16 #rurikon
       hilited_label_color: 0x999999 # 灰
   style:
@@ -82,7 +82,7 @@ patch:
     # 在候选窗口上滑动滚轮的行为：true（翻页）；false（选中下一个候选）
     paging_on_scroll: true
     # 鼠标点击候选项，创建截图
-    click_to_capture: true
+    click_to_capture: false
 
     layout: 
       align_type: center
@@ -100,7 +100,8 @@ patch:
       round_corner: 0
       shadow_offset_x: 4
       shadow_offset_y: 4
-      shadow_radius: 100
+      # 阴影感觉会导致很多bug
+      shadow_radius: 0
       spacing: 10
       type: horizontal
 

@@ -199,6 +199,9 @@ speller:
     - xform/;([td])o;x([aiueo]);/;$1w$2;/
     # 拗音の終わり
 
+    # んを一文字
+    # - derive/;nn;(?!aiueoy)/;n;/
+
     # 区切りを消す
     - xform/;//
     
