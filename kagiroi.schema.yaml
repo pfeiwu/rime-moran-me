@@ -191,7 +191,7 @@ speller:
 
     # 合拗音(う)と直音のwの部分
     # ku;xwa->kwa
-    - xform/;([kgshv])u;x([aiueo]);/;$1w$2;/
+    - xform/;([kgshfv])u;x([aiueo]);/;$1w$2;/
 
     # 他の拗音
     # to;xya->twa do;xya->dwa など
