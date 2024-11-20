@@ -9,7 +9,7 @@ schema:
 switches:
   - name: ascii_mode
     reset: 0
-    states: [かな, abc ]
+    states: [ローマ字, abc ]
   - name: full_shape
     states: [半角, 全角 ]
   - name: ascii_punct
@@ -41,136 +41,33 @@ speller:
   alphabet: abcdefghijklmnopqrstuvwxyz;
   delimiter: " '"  
   algebra:
-    # 最初に「;」
-    - xform/^/;/
-    # qでーを表す
-    - derive/ー/q;/
-
-    # 五十音の始まり
-
-    # 五十音 訓令式
-    - xform/あ/a;/
-    - xform/い/i;/
-    - xform/う/u;/
-    - xform/え/e;/
-    - xform/お/o;/
-    - xform/か/ka;/
-    - xform/が/ga;/
-    - xform/き/ki;/
-    - xform/ぎ/gi;/
-    - xform/く/ku;/
-    - xform/ぐ/gu;/
-    - xform/け/ke;/
-    - xform/げ/ge;/
-    - xform/こ/ko;/
-    - xform/ご/go;/
-    - xform/さ/sa;/
-    - xform/ざ/za;/
-    - xform/し/si;/
-    - xform/じ/zi;/
-    - xform/す/su;/
-    - xform/ず/zu;/
-    - xform/せ/se;/
-    - xform/ぜ/ze;/
-    - xform/そ/so;/
-    - xform/ぞ/zo;/
-    - xform/た/ta;/
-    - xform/だ/da;/
-    - xform/ち/ti;/
-    - xform/ぢ/di;/
-    - xform/つ/tu;/
-    - xform/づ/du;/
-    - xform/て/te;/
-    - xform/で/de;/
-    - xform/と/to;/
-    - xform/ど/do;/
-    - xform/な/na;/
-    - xform/に/ni;/
-    - xform/ぬ/nu;/
-    - xform/ね/ne;/
-    - xform/の/no;/
-    - xform/は/ha;/
-    - xform/ば/ba;/
-    - xform/ぱ/pa;/
-    - xform/ひ/hi;/
-    - xform/び/bi;/
-    - xform/ぴ/pi;/
-    - xform/ふ/hu;/
-    - xform/ぶ/bu;/
-    - xform/ぷ/pu;/
-    - xform/へ/he;/
-    - xform/べ/be;/
-    - xform/ぺ/pe;/
-    - xform/ほ/ho;/
-    - xform/ぼ/bo;/
-    - xform/ぽ/po;/
-    - xform/ま/ma;/
-    - xform/み/mi;/
-    - xform/む/mu;/
-    - xform/め/me;/
-    - xform/も/mo;/
-    - xform/や/ya;/
-    - xform/ゆ/yu;/
-    - xform/よ/yo;/
-    - xform/ら/ra;/
-    - xform/り/ri;/
-    - xform/る/ru;/
-    - xform/れ/re;/
-    - xform/ろ/ro;/
-    - xform/わ/wa;/
-    - xform/ゐ/wi;/
-    - xform/ゑ/we;/
-    - xform/を/wo;/
-    - xform/ん/nn;/
-
-    # 捨て仮名
-    - xform/ぁ/xa;/
-    - xform/ぃ/xi;/
-    - xform/ぅ/xu;/
-    - xform/ぇ/xe;/
-    - xform/ぉ/xo;/
-    - xform/ゃ/xya;/
-    - xform/ゅ/xyu;/
-    - xform/ょ/xyo;/
-    - xform/ゎ/xwa;/
-    - xform/ゕ/xka;/
-    - xform/ゖ/xke;/
-    - xform/っ/xtu;/
-
-    # vu
-    - xform/ゔ/vu;/
-
     # 五十音 ヘボン式
-    # si->shi
+    # si->shi 
     - derive/;si;/;shi;/
-    # ti->chi
+    # ti->chi 
     - derive/;ti;/;chi;/
-    # tu->tsu
+    # tu->tsu 
     - derive/;tu;/;tsu;/
-    # du->zu
+    # du->zu 
     - derive/;du;/;zu;/
-    # hu->fu
+    # hu->fu 
     - derive/;hu;/;fu;/
-    # zi/di->ji
+    # zi/di->ji 
     - derive/;[zd]i;/;ji;/
-    # xtu->xtsu
+    # xtu->xtsu 
     - derive/;xtu;/;xtsu;/
 
     # lで捨て仮名
     # xa -> la xya -> lya xtsu -> ltsu など
     - derive/;x([a-z]{1,3});/;l$1;/
 
-    # 五十音の終わり
-
     # 促音
     # xtu;ta->t;ta xtu;ki;xyo->k;ki;xyo など
     # ここで中の「;」を保留するのは、促音の後に拗音が続く場合に対応するため
     - xform/;xts?u;([a-z])([a-z]+);/;$1;$1$2;/
-
-    # 拗音の始まり
    
     # 開拗音(い)と直音のyの部分 訓令式
-    # ki;xya->kya など
+    # ki;xya->kya など 
     - xform/;([kgsztdnhbpmr])i;x(y[auo]);/;$1$2;/
     # ki;xe->kye など
     - xform/;([kgsztdnhbpmr])i;x([ei]);/;$1y$2;/
@@ -197,7 +94,6 @@ speller:
     # to;xya->twa do;xya->dwa など
     - xform/;([td])o;x(y[aiueo]);/;$1w$2;/
     - xform/;([td])o;x([aiueo]);/;$1w$2;/
-    # 拗音の終わり
 
     # んを一文字
     # - derive/;nn;(?!aiueoy)/;n;/
@@ -210,14 +106,12 @@ speller:
 
 
 translator:
-  dictionary: kagiroi 
+  dictionary: kagiroi
+  prism: kagiroi
   enable_completion: false
-  enable_sentence: false   
+  enable_sentence: false
   comment_format:
     - xform/.*//
-
-  
-
 punctuator:
   import_preset: default
 

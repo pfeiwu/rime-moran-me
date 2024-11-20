@@ -8,11 +8,5 @@ sort: by_weight
 use_preset_vocabulary: false
 import_tables:
   - kagiroi.kana
-  # - kagiroi.nlt
-  # - kagiroi.mozt
-  # - kagiroi.jmdict
-
-
-
-
+  - kagiroi.mozc
 ...
