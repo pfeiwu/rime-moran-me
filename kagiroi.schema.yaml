@@ -1,10 +1,11 @@
 schema:
   schema_id: kagiroi
   name: かぎろい
-  version: 'v1.0'
+  version: '20241120'
   author:
     - pfeiwu <dev.pengfei.wu@gmail.com>
-  dependencies:
+  description: |
+    Project Moczの辞書をベースにしたローマ字入力schemaです。
 
 switches:
   - name: ascii_mode

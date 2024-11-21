@@ -1,17 +1,19 @@
 patch:
+  # 简体改动 - 开始
+  # 八股文模型
   octagram/enable_for_sentence/__patch/grammar/language: zh-hans-t-essay-bgw
-  octagram/enable_for_fixed/__patch/grammar/language: zh-hans-t-essay-bgc
-  key_bindings/moran_switches:
-    __append:
-        - { when: has_menu, accept: "Control+s", toggle: traditionalization }
-        - { when: has_menu, accept: "Control+u", toggle: unicode_comment }
-        - { when: has_menu, accept: "Control+q", toggle: emoji }
-        - { when: composing, accept: "Control+x", toggle: extended_charset }
-        - { when: has_menu, accept: "Control+Shift+0", toggle: std_opencc }
-        - { when: has_menu, accept: "Control+i", toggle: chaifen }
-        - { when: has_menu, accept: "Control+period", toggle: pinyinhint }
+  # 简繁转换opencc配置
+  simplifier/opencc_config: s2t.json
+  # switch状态
+  switches/@2/states: [汉字, 漢字]
+  # 使用简体版固定码表
+  fixed/dictionary: moran_fixed_simp
+  # 简体改动 - 结束
+
+  # ctrl+d触发删用户词
   key_bindings/moran_switches/__append/+:
     - { when: has_menu, accept: "Control+d", send: "Shift+Delete" }
+  # 所有容错码均可参与构词
   algebra/generate_code/__append:
     - derive|^(.+?);(\w)(\w)(?:;\w\w)*$|$1$2$3o| # 全碼 YYXXo
     - derive|^(.+?)(?:;\w\w){1};(\w)(\w)(?:;\w\w)*$|$1$2$3o| # 容錯碼1
@@ -48,23 +50,34 @@ patch:
     - derive/^(.+?)(?:;\w\w){5};(bd|df|dw|yl|rw|fs|iw|pd|sw|cz)(?:;\w\w)*$/$1$2/ # 容錯碼5
     - erase/^(.+?);(.+)$/ # 刪除原始編碼以加速檢索
 
-  simplifier/option_name: traditionalization
-  simplifier/opencc_config: s2t.json
-  switches/@2/name: traditionalization
-  switches/@2/states: [汉字, 漢字]
-  fixed/dictionary: moran_fixed_simp
+  # english独立tag
   english/tag: english
+
+  # 使用oj作为重复码
   quick_repeat/input: "oj"
+  # 让oj自动上屏
+  speller/auto_select_pattern: ^;(\w+|;)|oj
+
+  # 启用单字注入次选功能
   moran/show_chars_anyway: true
+  # 启用自由加词功能
   moran/pin/panacea/freestyle: true
 
-  # use kagiroi as Japanese translator
+  # 日语输入 - 开始
+  # 添加依赖
   schema/depenencies/+:
     - kagiroi
-  schema/translators/+:
+  # 添加日语翻译器
+  engine/translators/+:
     - script_translator@japanese_o
+  # 使用火光棱镜
   japanese_o/dictionary: kagiroi
   japanese_o/prism: kagiroi
+  # 使用ok引导
+  japanese_o/prefix: ok
+  recognizer/patterns/japanese_o: "(^ok[a-z]*$)"
+  # 禁用completion
   japanese_o/enable_completion: false
-  japanese_o/spelling_hints: 3
-  japanese_o/tips: "〔火光〕"
+  # 改变提示
+  japanese_o/tips: "〔カギロイ〕"
+  # 日语输入 - 结束

@@ -1,26 +1,28 @@
 patch:
+  # 简体改动 - 开始
+  # 八股文模型
   octagram/enable_for_fixed/__patch/grammar/language: zh-hans-t-essay-bgc
-  key_bindings/moran_switches:
-    __append:
-        - { when: has_menu, accept: "Control+s", toggle: traditionalization }
-        - { when: has_menu, accept: "Control+u", toggle: unicode_comment }
-        - { when: has_menu, accept: "Control+q", toggle: emoji }
-        - { when: composing, accept: "Control+x", toggle: extended_charset }
-        - { when: has_menu, accept: "Control+Shift+0", toggle: std_opencc }
-        - { when: has_menu, accept: "Control+i", toggle: chaifen }
-        - { when: has_menu, accept: "Control+period", toggle: pinyinhint }
-  key_bindings/moran_switches/__append/+:
-    - { when: has_menu, accept: "Control+d", send: "Shift+Delete" }
-
-  speller/auto_select_pattern: ^;(\w|;)+
-  speller/alphabet: "abcdefghijklmnopqrstuvwxyz=;/"
-  simplifier/option_name: traditionalization
+  # 简繁转换opencc配置
   simplifier/opencc_config: s2t.json
-  switches/@2/name: traditionalization
+  # switch状态
   switches/@2/states: [汉字, 漢字]
+  # 使用简体版固定码表
   fixed/dictionary: moran_fixed_simp
   translator/dictionary: moran_fixed_simp
-  recognizer/patterns/panacea: "^[a-z]*/{1,2}[a-z']*$" 
+  # 简体改动 - 结束
+
+  # 使用oj作为重复码
   quick_repeat/input: "oj"
+  # 让oj自动上屏
+  speller/auto_select_pattern: ^;(\w+|;)|oj
+
+  # 置顶及加词功能 - 开始
+  # 让speller处理/
+  speller/alphabet: "abcdefghijklmnopqrstuvwxyz=;/"
+  # 增加加词pattern
+  recognizer/patterns/panacea: "^[a-z]*/{1,2}[a-z']*$" 
+  # 启用置顶功能
   moran/pin/enable: true
+  # 启用自由加词功能
   moran/pin/panacea/freestyle: true
+  # 置顶及加词功能 - 结束
