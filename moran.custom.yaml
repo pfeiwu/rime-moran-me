@@ -57,3 +57,14 @@ patch:
   quick_repeat/input: "oj"
   moran/show_chars_anyway: true
   moran/pin/panacea/freestyle: true
+
+  # use kagiroi as Japanese translator
+  schema/depenencies/+:
+    - kagiroi
+  schema/translators/+:
+    - script_translator@japanese_o
+  japanese_o/dictionary: kagiroi
+  japanese_o/prism: kagiroi
+  japanese_o/enable_completion: false
+  japanese_o/spelling_hints: 3
+  japanese_o/tips: "〔火光〕"
