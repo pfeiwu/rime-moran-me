@@ -41,59 +41,51 @@ speller:
   alphabet: abcdefghijklmnopqrstuvwxyz;
   delimiter: " '"  
   algebra:
-    # 五十音 ヘボン式
-    # si->shi 
-    - derive/;si;/;shi;/
-    # ti->chi 
-    - derive/;ti;/;chi;/
-    # tu->tsu 
-    - derive/;tu;/;tsu;/
-    # du->zu 
-    - derive/;du;/;zu;/
-    # hu->fu 
-    - derive/;hu;/;fu;/
-    # zi/di->ji 
-    - derive/;[zd]i;/;ji;/
-    # xtu->xtsu 
-    - derive/;xtu;/;xtsu;/
-
-    # lで捨て仮名
-    # xa -> la xya -> lya xtsu -> ltsu など
-    - derive/;x([a-z]{1,3});/;l$1;/
-
     # 促音
     # xtu;ta->t;ta xtu;ki;xyo->k;ki;xyo など
     # ここで中の「;」を保留するのは、促音の後に拗音が続く場合に対応するため
-    - xform/;xts?u;([a-z])([a-z]+);/;$1;$1$2;/
+    - xform/;xtu;([a-z])([a-z]+);/;$1;$1$2;/
    
     # 開拗音(い)と直音のyの部分 訓令式
     # ki;xya->kya など 
-    - xform/;([kgsztdnhbpmr])i;x(y[auo]);/;$1$2;/
-    # ki;xe->kye など
-    - xform/;([kgsztdnhbpmr])i;x([ei]);/;$1y$2;/
-    # dya->zya など
-    - derive/;d(y[aiueo]);/;z$1;/
-
-    # 開拗音(い)と直音のyの部分 ヘボン式
-    # ji;xya->jyaなど
-    - xform/;ji;x(y[auo]);/;j$1;/
-    # jya->jaなど
-    - derive/;jy([auo]);/;j$1;/
+    - xform/;([kgsztdnhbpmr])i;xy?([aiueo]);/;$1y$2;/
     # ji;xe->je
     - xform/;ji;xe;/;je;/
-    # shi;xya->shaなど
-    - xform/;([sc]h)i;xy([auo]);/;$1$2;/
     # shi;xe->she chi;xe->che など
     - xform/;([sc]h)i;xe;/;$1e;/
-
     # 合拗音(う)と直音のwの部分
     # ku;xwa->kwa
     - xform/;([kgshfv])u;x([aiueo]);/;$1w$2;/
 
     # 他の拗音
     # to;xya->twa do;xya->dwa など
-    - xform/;([td])o;x(y[aiueo]);/;$1w$2;/
-    - xform/;([td])o;x([aiueo]);/;$1w$2;/
+    - xform/;([td])o;xy?([aiueo]);/;$1w$2;/
+
+    # 拗音 ヘボン式
+    # zya->jya,jaなど
+    - derive/;zy([aiueo]);/;jy$1;/
+    - derive/;jy(.);/;j$1;/
+    # sya->sha tya->chaなど
+    - derive/;sy([auo]);/;sh$1;/
+    - derive/;ty([auo]);/;ch$1;/    
+
+    # 五十音 ヘボン式
+    # si->shi 
+    - derive/;si;/;shi;/
+    # ti->chi 
+    - derive/;ti;/;chi;/
+    # tu->tsu xtu->xtsu 
+    - derive/;(x?)tu;/;$1tsu;/
+    # du->zu 
+    - derive/;du;/;zu;/
+    # hu->fu 
+    - derive/;hu;/;fu;/
+    # zi/di->ji 
+    - derive/;[zd]i;/;ji;/
+  
+   # lで捨て仮名
+    # xa -> la xya -> lya xtsu -> ltsu など
+    - derive/;x([a-z]{1,3});/;l$1;/
 
     # んを一文字
     # - derive/;nn;(?!aiueoy)/;n;/
