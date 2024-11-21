@@ -95,12 +95,20 @@ def process_words(chars_file, words_file, output_file):
             open(output_file, 'w', encoding='utf-8') as f_out:
         for line_num, line in enumerate(f_in, 1):
             parts = line.strip().split('\t')
-            if len(parts) < 3:
+            if len(parts) < 2:
                 print(f"Warning: Invalid format at line {line_num}: {line.strip()}")
                 f_out.write(line)
                 continue
-
-            word, codes, freq = parts[:3]
+            try:
+                word, codes, freq = parts[:3]
+            except ValueError:
+                try:
+                    word, codes = parts[:2]
+                    freq = -1
+                except ValueError:
+                    print(f"Warning: Invalid format at line {line_num}: {line.strip()}")
+                    f_out.write(line)
+                    continue
             codes = codes.split()
 
             # 移除所有标点后再比较长度
@@ -132,7 +140,8 @@ def process_words(chars_file, words_file, output_file):
                 code_index += 1
 
             if not has_missing:
-                f_out.write(f"{word}\t{' '.join(new_codes)}\t{freq}\n")
+                line = f"{word}\t{' '.join(new_codes)}\t{freq}\n" if freq != -1 else f"{word}\t{' '.join(new_codes)}\n"
+                f_out.write(line)
             else:
                 f_out.write(line)
 
