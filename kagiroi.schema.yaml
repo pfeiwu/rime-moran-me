@@ -41,61 +41,34 @@ speller:
   alphabet: abcdefghijklmnopqrstuvwxyz;
   delimiter: " '"  
   algebra:
-    # 促音
-    # xtu;ta->t;ta xtu;ki;xyo->k;ki;xyo など
-    # ここで中の「;」を保留するのは、促音の後に拗音が続く場合に対応するため
-    - xform/;xtu;([a-z])([a-z]+);/;$1;$1$2;/
-   
-    # 開拗音(い)と直音のyの部分 訓令式
-    # ki;xya->kya など 
-    - xform/;([kgsztdnhbpmr])i;xy?([aiueo]);/;$1y$2;/
-    # ji;xe->je
-    - xform/;ji;xe;/;je;/
-    # shi;xe->she chi;xe->che など
-    - xform/;([sc]h)i;xe;/;$1e;/
-    # 合拗音(う)と直音のwの部分
-    # ku;xwa->kwa
-    - xform/;([kgshfv])u;x([aiueo]);/;$1w$2;/
+    # ヘボン式ローマ字入力をサポートします
+    # ただし、歴史的仮名遣いに対するヘボン式ローマ字変換は基本的に提供していません
+    # 例：「zu」は「ず」にのみ変換され、「づ」には変換されません。「づ」を入力する場合は訓令式の「du」を使用してください
+    # 一部の単語については、辞書ファイルに新旧両方のヘボン式表記が登録されたため、どちらの入力でも変換可能です
+    # 例：「横綱」→「yokozuna」「yokoduna」両方も対応
 
-    # 他の拗音
-    # to;xya->twa do;xya->dwa など
-    - xform/;([td])o;xy?([aiueo]);/;$1w$2;/
-
-    # 拗音 ヘボン式
-    # zya->jya,jaなど
-    - derive/;zy([aiueo]);/;jy$1;/
-    - derive/;jy(.);/;j$1;/
-    # sya->sha tya->chaなど
-    - derive/;sy([auo]);/;sh$1;/
-    - derive/;ty([auo]);/;ch$1;/    
-
-    # 五十音 ヘボン式
-    # si->shi 
-    - derive/;si;/;shi;/
-    # ti->chi 
-    - derive/;ti;/;chi;/
-    # tu->tsu xtu->xtsu 
+    # ti→chi、tya→cha
+    - derive/;t(?:(i)|y([aueo]));/;ch$1$2;/
+    # zi→ji、zya→jya
+    - derive/;z(i|y[aiueo]);/;j$1;/
+    # hu→fu、hwa→fa
+    - derive/;h(?:(u)|w([aioe]));/;f$1$2;/
+    # 子音が変化する場合の促音の処理
+    # tchi→cchi、hfu→ffu
+    - xform/;[tzh];([cjf])(.+);/;$1;$1$2;/
+    # si→shi、sya→sha 
+    - derive/;s(?:(i)|y([aueo]));/;sh$1$2;/
+    # jya→ja
+    - derive/;jy([aueo]);/;j$1;/
+    # tu→tsu、xtu→xtsu 
     - derive/;(x?)tu;/;$1tsu;/
-    # du->zu 
-    - derive/;du;/;zu;/
-    # hu->fu 
-    - derive/;hu;/;fu;/
-    # zi/di->ji 
-    - derive/;[zd]i;/;ji;/
-  
-   # lで捨て仮名
-    # xa -> la xya -> lya xtsu -> ltsu など
+    # lで始まるの小書き文字の対応
+    # 例：xa→la、xya→lya、xtsu→ltsu など
     - derive/;x([a-z]{1,3});/;l$1;/
-
-    # んを一文字
-    # - derive/;nn;(?!aiueoy)/;n;/
-
-    # 区切りを消す
+    # 区切りの削除
     - xform/;//
-    
-    # コードだけを残す
+    # アルファベット以外を削除
     - erase/^.*[^a-z].*$/
-
 
 translator:
   dictionary: kagiroi
