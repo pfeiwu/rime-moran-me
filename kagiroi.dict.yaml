@@ -3,10 +3,12 @@
 
 ---
 name: kagiroi
-version: "20241118"
+version: "20241120"
 sort: by_weight
 use_preset_vocabulary: false
 import_tables:
   - kagiroi.kana
-  - kagiroi.mozc
+  - kagiroi.suffix
+  - kagiroi.base
+  
 ...
