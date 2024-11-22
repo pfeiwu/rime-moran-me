@@ -69,15 +69,15 @@ patch:
     - kagiroi
   # 添加日语翻译器
   engine/translators/+:
-    - script_translator@japanese_o
+    - lua_translator@*kagiroi/kagiroi_translator
   # 使用火光棱镜
-  japanese_o/dictionary: kagiroi
-  japanese_o/prism: kagiroi
+  kagiroi/dictionary: kagiroi
+  kagiroi/prism: kagiroi
   # 使用ok引导
-  japanese_o/prefix: ok
+  kagiroi/prefix: ok
   recognizer/patterns/japanese_o: "(^ok[a-z]*$)"
+  kagiroi/tag: japanese_o
   # 禁用completion
-  japanese_o/enable_completion: false
-  # 改变提示
-  japanese_o/tips: "〔カギロイ〕"
+  kagiroi/enable_completion: false
+  kagiroi/tips: "〔カギロイ〕"
   # 日语输入 - 结束
