@@ -50,8 +50,8 @@ patch:
     - derive/^(.+?)(?:;\w\w){5};(bd|df|dw|yl|rw|fs|iw|pd|sw|cz)(?:;\w\w)*$/$1$2/ # 容錯碼5
     - erase/^(.+?);(.+)$/ # 刪除原始編碼以加速檢索
 
-  # english独立tag
-  english/tag: english
+  # # english独立tag
+  # english/tag: english
 
   # 使用oj作为重复码
   quick_repeat/input: "oj"
