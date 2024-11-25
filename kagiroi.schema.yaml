@@ -6,13 +6,15 @@ schema:
     - pfeiwu <dev.pengfei.wu@gmail.com>
   description: |
     Project Moczの辞書をベースにしたローマ字入力schemaです。
+  dependencies:
+    - kagiroi_kana
 
 switches:
   - name: ascii_mode
     reset: 0
-    states: [ローマ字, abc ]
+    states: [ ローマ字, abc ]
   - name: full_shape
-    states: [半角, 全角 ]
+    states: [ 半角, 全角 ]
   - name: ascii_punct
     states: [ 。，, ．， ]
 
@@ -34,52 +36,33 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - lua_translator@*kagiroi/kagiroi_translator
+    - script_translator
+    - script_translator@kana
   filters:
+    - lua_filter@*kagiroi/kagiroi_mecab_filter
     - uniquifier
 
 speller:
   alphabet: abcdefghijklmnopqrstuvwxyz;
   delimiter: " '"
   algebra:
-    # ヘボン式ローマ字入力をサポートします
-    # ただし、歴史的仮名遣いに対するヘボン式ローマ字変換は基本的に提供していません
-    # 例：「zu」は「ず」にのみ変換され、「づ」には変換されません。「づ」を入力する場合は訓令式の「du」を使用してください
-    # 一部の単語については、辞書ファイルに新旧両方のヘボン式表記が登録されたため、どちらの入力でも変換可能です
-    # 例：「横綱」→「yokozuna」「yokoduna」両方も対応
+    __patch:
+      - kagiroi:/algebra/gen_hebon_code
+      - kagiroi:/algebra/remove_delimiter
 
-    # ti→chi、tya→cha
-    - derive/;t(?:(i)|y([aueo]));/;ch$1$2;/
-    # zi→ji、zya→jya
-    - derive/;z(i|y[aiueo]);/;j$1;/
-    # hu→fu、hwa→fa
-    - derive/;h(?:(u)|w([aioe]));/;f$1$2;/
-    # 子音が変化する場合の促音の処理
-    # tchi→cchi、hfu→ffu
-    - xform/;[tzh];([cjf])(.+);/;$1;$1$2;/
-    # si→shi、sya→sha
-    - derive/;s(?:(i)|y([aueo]));/;sh$1$2;/
-    # jya→ja
-    - derive/;jy([aueo]);/;j$1;/
-    # tu→tsu、xtu→xtsu
-    - derive/;(x?)tu;/;$1tsu;/
-    # lで始まるの小書き文字の対応
-    # 例：xa→la、xya→lya、xtsu→ltsu など
-    - derive/;x([a-z]{1,3});/;l$1;/
-    # 後ろに母音がない場合、「n」を「ん」に変換可能
-    - derive/;nn;(?!aiueoy)/;n;/
-    # 区切りの削除
-    - xform/;//
-    # アルファベット以外を削除
-    - erase/^.*[^a-z].*$/
-
-kagiroi:
-  dictionary: kagiroi
-  prism: kagiroi
+translator:
+  dictionary: kagiroi.base
   enable_completion: false
   enable_sentence: false
-  comment_format:
-    - xform/.*//
+  enable_user_dict: true
+  encode_commit_history: true
+
+kana:
+  dictionary: kagiroi.kana
+  enable_completion: false
+  enable_user_dict: true
+  enable_encoder: false
+  encode_commit_history: true
 
 punctuator:
   import_preset: default

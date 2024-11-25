@@ -1,0 +1,63 @@
+schema:
+  schema_id: kagiroi_kana
+  name: 工具方案
+  version: '20241120'
+  author:
+    - pfeiwu <dev.pengfei.wu@gmail.com>
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ローマ字, abc ]
+  - name: full_shape
+    states: [半角, 全角 ]
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - script_translator
+  filters:
+    - uniquifier
+
+speller:
+  alphabet: abcdefghijklmnopqrstuvwxyz;
+  delimiter: " '"
+  algebra:
+    __patch:
+      - kagiroi:/algebra/gen_hebon_code
+      - kagiroi:/algebra/remove_delimiter
+
+translator:
+  dictionary: kagiroi.kana
+  enable_completion: false
+  enable_sentence: false
+  enable_user_dict: true
+  enable_encoder: false
+  encode_commit_history: true
+
+
+punctuator:
+  import_preset: default
+
+recognizer:
+  import_preset: default
+
+key_binder:
+  import_preset: default
