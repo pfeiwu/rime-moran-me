@@ -41,7 +41,7 @@ function Top.func(t_input, env)
                 new_entry.text = Top.query_mecab(kana_str, env)
                 local new_cand = Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate()
                 new_cand.comment = env.smart_indicator
-                yield(Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate())
+                yield(new_cand)
             end
         else
             yield(cand)
