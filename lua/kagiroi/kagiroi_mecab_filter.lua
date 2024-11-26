@@ -26,6 +26,7 @@ function Top.func(t_input, env)
             for cand in t_input:iter() do
                 yield(cand)
             end
+            return
         end
     end
     for cand in t_input:iter() do
