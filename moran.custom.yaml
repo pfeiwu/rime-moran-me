@@ -64,20 +64,24 @@ patch:
   moran/pin/panacea/freestyle: true
 
   # 日语输入 - 开始
-  # 添加依赖
-  schema/depenencies/+:
-    - kagiroi
-  # 添加日语翻译器
-  engine/translators/+:
-    - lua_translator@*kagiroi/kagiroi_translator
-  # 使用火光棱镜
-  kagiroi/dictionary: kagiroi
-  kagiroi/prism: kagiroi
-  # 使用ok引导
-  kagiroi/prefix: ok
-  recognizer/patterns/japanese_o: "(^ok[a-z]*$)"
-  kagiroi/tag: japanese_o
-  # 禁用completion
-  kagiroi/enable_completion: false
-  kagiroi/tips: "〔カギロイ〕"
-  # 日语输入 - 结束
+  # schema/depenencies/+:
+  #   - kagiroi
+  # engine/segmentors/@before 3: affix_segmentor@kagiroi
+  # engine/translators/+:
+  #   - script_translator@kagiroi_base
+  # engine/filters/@before 0: lua_filter@*kagiroi/kagiroi_mecab_filter
+  # kagiroi_kana:
+  #   __include: kagiroi:/translator/kana_translator
+  #   __patch:
+  #     tag: kagiroi
+  # kagiroi_base:
+  #   __include: kagiroi:/translator/base_translator
+  #   __patch:
+  #     tag: kagiroi
+  # kagiroi:
+  #   prefix: ok
+  #   tips: 〔火光〕
+  #   tag: kagiroi
+  #   smart_indicator: 💡
+  # recognizer/patterns/kagiroi: "(^ok[a-z]*$)"
+  # # 日语输入 - 结束

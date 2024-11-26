@@ -37,7 +37,6 @@ engine:
   translators:
     - punct_translator
     - script_translator
-    - script_translator@kana
   filters:
     - lua_filter@*kagiroi/kagiroi_mecab_filter
     - uniquifier
@@ -48,21 +47,12 @@ speller:
   algebra:
     __patch:
       - kagiroi:/algebra/gen_hebon_code
-      - kagiroi:/algebra/remove_delimiter
 
 translator:
-  dictionary: kagiroi.base
-  enable_completion: false
-  enable_sentence: false
-  enable_user_dict: true
-  encode_commit_history: true
+  __include: kagiroi:/translator/base_translator
 
 kana:
-  dictionary: kagiroi.kana
-  enable_completion: false
-  enable_user_dict: true
-  enable_encoder: false
-  encode_commit_history: true
+  __include: kagiroi:/translator/kana_translator
 
 punctuator:
   import_preset: default

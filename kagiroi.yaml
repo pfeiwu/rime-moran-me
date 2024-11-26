@@ -8,25 +8,35 @@ algebra:
       # 例：「横綱」→「yokozuna」「yokoduna」両方も対応
 
       # ti→chi、tya→cha
-      - derive/;t(?:(i)|y([aueo]));/;ch$1$2;/
+      - derive/^(;?)t(?:(i)|y([aueo]))$/$1ch$2$3/
       # zi→ji、zya→jya
-      - derive/;z(i|y[aiueo]);/;j$1;/
+      - derive/^(;?)z(i|y[aiueo])$/$1j$2/
       # hu→fu、hwa→fa
-      - derive/;h(?:(u)|w([aioe]));/;f$1$2;/
-      # 子音が変化する場合の促音の処理
-      # tchi→cchi、hfu→ffu
-      - xform/;[tzh];([cjf])(.+);/;$1;$1$2;/
+      - derive/^(;?)h(?:(u)|w([aioe]))$/$1f$2$3/
       # si→shi、sya→sha
-      - derive/;s(?:(i)|y([aueo]));/;sh$1$2;/
+      - derive/^(;?)s(?:(i)|y([aueo]))$/$1sh$2$3/
       # jya→ja
-      - derive/;jy([aueo]);/;j$1;/
+      - derive/^(;?)jy([aueo])$/$1j$2/
       # tu→tsu、xtu→xtsu
-      - derive/;(x?)tu;/;$1tsu;/
+      - derive/^(;?)(x?)tu$/$1$2tsu/
       # lで始まるの小書き文字の対応
       # 例：xa→la、xya→lya、xtsu→ltsu など
-      - derive/;x([a-z]{1,3});/;l$1;/
-      # 後ろに母音がない場合、「n」を「ん」に変換可能
-      - derive/;nn;(?!aiueoy)/;n;/
-  remove_delimiter:
-    __append:
-      - xform/;//
+      - derive/^(;?)x([a-z]{1,3})$/$1l$2/
+      # 促音のマーク「;」の転換
+      - xform/^;([a-z])(.+)$/$1$1$2/
+      # 撥音「ん」を「nn」で入力可能
+      - derive/^n$/nn/
+
+translator:
+  kana_translator:
+    __patch:
+      dictionary: kagiroi_kana
+      enable_completion: false
+      enable_user_dict: false
+      enable_sentence: true
+  base_translator:
+    __patch:
+      dictionary: kagiroi.base
+      enable_completion: true
+      enable_user_dict: true
+      enable_sentence: true

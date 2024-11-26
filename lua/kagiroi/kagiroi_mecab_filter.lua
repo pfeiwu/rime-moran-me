@@ -4,6 +4,10 @@ local MAX_CACHE_SIZE = 100
 
 function Top.init(env)
     env.mem = Memory(env.engine, Schema("kagiroi"))
+    env.kanafier = Component.Translator(env.engine, "", "script_translator@kagiroi_kana")
+    if not env.kanafier then
+        env.kanafier = Component.Translator(env.engine, "", "script_translator@kana")
+    end
     env.pathsep = (package.config or '/'):sub(1, 1)
     env.base_path = rime_api.get_user_data_dir() .. env.pathsep .. "lua" .. env.pathsep .. "kagiroi"
     env.cache = setmetatable({}, { __mode = "v" }) -- 弱引用表
@@ -13,52 +17,29 @@ function Top.init(env)
     end
     env.mecab = env.mecab()
     env.converter = env.mecab:new("-d " .. env.base_path .. env.pathsep .. "dic")
-    -- todo 挂到主方案上
-    env.prefix = env.engine.schema.config:get_string("kagiroi/prefix") or ""
-    env.tips = env.engine.schema.config:get_string("kagiroi/tips") or ""
-    env.candidate_tips = env.engine.schema.config:get_string("kagiroi/candidate_tips") or "🔥"
-end
-
-function Top.codepoints(word)
-    local f, s, i = utf8.codes(word)
-    local value = nil
-    return function()
-        i, value = f(s, i)
-        if i then
-            return i, value
-        else
-            return nil
-        end
-    end
-end
-
----Return true if @str is purely Hiragana (including prolonged sound mark ー).
----@param str string
----@return boolean
-function Top.str_is_hiragana(str)
-    for _, cp in Top.codepoints(str) do
-        -- Check if it's either hiragana range or the prolonged sound mark
-        if not (
-                (cp >= 0x3040 and cp <= 0x309F) or -- Hiragana range
-                cp == 0x30FC                       -- Prolonged sound mark (ー)
-            ) then
-            return false
-        end
-    end
-    return true
+    env.smart_indicator = env.engine.schema.config:get_string("kagiroi/smart_indicator") or "🔥"
+    env.tag = env.engine.schema.config:get_string("kagiroi/tag") or ""
 end
 
 function Top.func(t_input, env)
+    local ctx = env.engine.context
+    local segment = ctx.composition:back()
+    if env.tag ~= "" then
+        if not segment:has_tag(env.tag) then
+            for cand in t_input:iter() do
+                yield(cand)
+            end
+        end
+    end
     for cand in t_input:iter() do
         if cand:get_genuine().type == 'sentence' then
-            -- 排除掉base码表输出的sentence
-            if Top.str_is_hiragana(cand:to_sentence().entry.text) then
-                local new_entry = DictEntry(cand:to_sentence().entry)
-                new_entry.text = Top.query_mecab(new_entry.text, env)
-                local new_cand = Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate()
-                new_cand.comment = env.candidate_tips
-                yield(Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate())
-            end
+            local new_entry = DictEntry(cand:to_sentence().entry)
+            local active_text = segment:active_text(ctx.input)
+            local kana_str = Top.query_kanafier(active_text, segment, env)
+            new_entry.text = Top.query_mecab(kana_str, env)
+            local new_cand = Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate()
+            new_cand.comment = env.smart_indicator
+            yield(Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate())
         else
             yield(cand)
         end
@@ -79,6 +60,18 @@ function Top.query_mecab(kana, env)
         cache_size = cache_size + 1
     end
     return result
+end
+
+function Top.query_kanafier(input, seg, env)
+    local xlation = env.kanafier:query(input, seg)
+    if xlation then
+        local nxt, thisobj = xlation:iter()
+        local cand = nxt(thisobj)
+        if cand then
+            return cand.text
+        end
+    end
+    return ""
 end
 
 return Top
