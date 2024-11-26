@@ -30,13 +30,19 @@ function Top.func(t_input, env)
     end
     for cand in t_input:iter() do
         if cand:get_genuine().type == 'sentence' then
-            local new_entry = DictEntry(cand:to_sentence().entry)
-            local active_text = segment:active_text(ctx.input)
-            local kana_str = Top.query_kanafier(active_text, segment, env)
-            new_entry.text = Top.query_mecab(kana_str, env)
-            local new_cand = Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate()
-            new_cand.comment = env.smart_indicator
-            yield(Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate())
+            local sentence_cand = cand:to_sentence()
+            -- 保证我们只处理来自kagiroi的句子
+            if sentence_cand.lang_name ~= "kagiroi" then
+                yield(cand)
+            else
+                local new_entry = DictEntry(sentence_cand.entry)
+                local active_text = segment:active_text(ctx.input)
+                local kana_str = Top.query_kanafier(active_text, segment, env)
+                new_entry.text = Top.query_mecab(kana_str, env)
+                local new_cand = Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate()
+                new_cand.comment = env.smart_indicator
+                yield(Phrase(env.mem, "mecab_phrase", cand.start, cand._end, new_entry):toCandidate())
+            end
         else
             yield(cand)
         end
