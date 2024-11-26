@@ -5,9 +5,6 @@ local MAX_CACHE_SIZE = 100
 function Top.init(env)
     env.mem = Memory(env.engine, Schema("kagiroi"))
     env.kanafier = Component.Translator(env.engine, "", "script_translator@kagiroi_kana")
-    if not env.kanafier then
-        env.kanafier = Component.Translator(env.engine, "", "script_translator@kana")
-    end
     env.pathsep = (package.config or '/'):sub(1, 1)
     env.base_path = rime_api.get_user_data_dir() .. env.pathsep .. "lua" .. env.pathsep .. "kagiroi"
     env.cache = setmetatable({}, { __mode = "v" }) -- 弱引用表

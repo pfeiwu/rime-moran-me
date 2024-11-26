@@ -51,7 +51,7 @@ speller:
 translator:
   __include: kagiroi:/translator/base_translator
 
-kana:
+kagiroi_kana:
   __include: kagiroi:/translator/kana_translator
 
 punctuator:
