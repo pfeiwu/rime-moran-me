@@ -3,22 +3,43 @@ local cache_size = 0
 local MAX_CACHE_SIZE = 100
 
 function Top.init(env)
-    env.mem = Memory(env.engine, Schema("kagiroi"))
-    env.kanafier = Component.Translator(env.engine, "", "script_translator@kagiroi_kana")
+    local os_name = package.config:sub(1, 1) == '\\' and 'Windows' or os.getenv('OS') or io.popen('uname -s'):read('*l')
+    local arch = io.popen('uname -m'):read('*l') or os.getenv('PROCESSOR_ARCHITECTURE')
+    local suffix = os_name == 'Windows' and '.dll' or '.so'
+    local mecab_file_name = "lua_mecab" .. "_" .. os_name .. "_" .. arch .. suffix
     env.pathsep = (package.config or '/'):sub(1, 1)
     env.base_path = rime_api.get_user_data_dir() .. env.pathsep .. "lua" .. env.pathsep .. "kagiroi"
-    env.cache = setmetatable({}, { __mode = "v" }) -- 弱引用表
-    env.mecab = package.loadlib(env.base_path .. env.pathsep .. "lua-mecab.so", "luaopen_mecab")
+    print(mecab_file_name)
+    env.mecab = package.loadlib(env.base_path .. env.pathsep .. mecab_file_name, "luaopen_mecab")
     if not env.mecab then
-        error("Failed to load lua-mecab.so")
+        env.mecab_available = false
+        print("Failed to load mecab library")
+        return
     end
+    env.mecab_available = true
+    env.mem = Memory(env.engine, Schema("kagiroi"))
+    env.kanafier = Component.Translator(env.engine, "", "script_translator@kagiroi_kana")
+    env.cache = setmetatable({}, { __mode = "v" }) -- 弱引用表
     env.mecab = env.mecab()
     env.converter = env.mecab:new("-d " .. env.base_path .. env.pathsep .. "dic")
     env.smart_indicator = env.engine.schema.config:get_string("kagiroi/smart_indicator") or "🔥"
     env.tag = env.engine.schema.config:get_string("kagiroi/tag") or ""
 end
 
+function Top.fini(env)
+    if env.mecab_available then
+        env.mem:disconnect()
+    end
+end
+
 function Top.func(t_input, env)
+    if not env.mecab_available then
+        for cand in t_input:iter() do
+            yield(cand)
+        end
+        return
+    end
+
     local ctx = env.engine.context
     local segment = ctx.composition:back()
     if env.tag ~= "" then
