@@ -63,25 +63,25 @@ patch:
   # 启用自由加词功能
   moran/pin/panacea/freestyle: true
 
-  # 日语输入 - 开始
-  schema/depenencies/+:
-    - kagiroi
-  engine/segmentors/@before 3: affix_segmentor@kagiroi
-  engine/translators/+:
-    - script_translator@kagiroi_base
-  engine/filters/@before 0: lua_filter@*kagiroi/kagiroi_mecab_filter
-  kagiroi_kana:
-    __include: kagiroi:/translator/kana_translator
-    __patch:
-      tag: kagiroi
-  kagiroi_base:
-    __include: kagiroi:/translator/base_translator
-    __patch:
-      tag: kagiroi
-  kagiroi:
-    prefix: ok
-    tips: 〔火光〕
-    tag: kagiroi
-    smart_indicator: 💡
-  recognizer/patterns/kagiroi: "(^ok[a-z]*$)"
-  # # 日语输入 - 结束
+  # # 日语输入 - 开始
+  # schema/depenencies/+:
+  #   - kagiroi
+  # engine/segmentors/@before 3: affix_segmentor@kagiroi
+  # engine/translators/+:
+  #   - script_translator@kagiroi_base
+  # engine/filters/@before 0: lua_filter@*kagiroi/kagiroi_mecab_filter
+  # kagiroi_kana:
+  #   __include: kagiroi:/translator/kana_translator
+  #   __patch:
+  #     tag: kagiroi
+  # kagiroi_base:
+  #   __include: kagiroi:/translator/base_translator
+  #   __patch:
+  #     tag: kagiroi
+  # kagiroi:
+  #   prefix: ok
+  #   tips: 〔火光〕
+  #   tag: kagiroi
+  #   smart_indicator: 💡
+  # recognizer/patterns/kagiroi: "(^ok[a-z]*$)"
+  # # # 日语输入 - 结束

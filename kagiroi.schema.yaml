@@ -5,14 +5,16 @@ schema:
   author:
     - pfeiwu <dev.pengfei.wu@gmail.com>
   description: |
-    Project Moczの辞書をベースにしたローマ字入力schemaです。
+    スマートなローマ字日本語入力。
   dependencies:
     - kagiroi_kana
 
 switches:
   - name: ascii_mode
     reset: 0
-    states: [ ローマ字, abc ]
+    states: [ あ, abc ]
+  - name: composition_mode
+    states: [ 変換, 無変換 ]
   - name: full_shape
     states: [ 半角, 全角 ]
   - name: ascii_punct
@@ -36,23 +38,20 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - script_translator
+    - lua_translator@*kagiroi/kagiroi_translator
   filters:
-    - lua_filter@*kagiroi/kagiroi_mecab_filter
     - uniquifier
 
 speller:
-  alphabet: abcdefghijklmnopqrstuvwxyz;
+  alphabet: abcdefghijklmnopqrstuvwxyz-;
   delimiter: " '"
   algebra:
     __patch:
       - kagiroi:/algebra/gen_hebon_code
 
 translator:
-  __include: kagiroi:/translator/base_translator
-
-kagiroi_kana:
-  __include: kagiroi:/translator/kana_translator
+  dictionary: kagiroi
+  enable_user_dict: true
 
 punctuator:
   import_preset: default
@@ -60,5 +59,18 @@ punctuator:
 recognizer:
   import_preset: default
 
+kagiroi:
+  preedit_view: hiragana # hiragana katakana romaji inline
+  hojo_code: enable
+  live_conversion: 
+    enable: true
+    max_syllable_length: 10
+
 key_binder:
-  import_preset: default
+  bindings:
+    __patch:
+      - kagiroi:/key_bindings/paging_with_minus_equal
+      - kagiroi:/key_bindings/kagiroi_swithes
+      - key_bindings:/emacs_editing
+      - key_bindings:/move_by_word_with_tab
+      - key_bindings:/numbered_mode_switch

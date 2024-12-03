@@ -23,7 +23,7 @@ engine:
     - script_translator
 
 speller:
-  alphabet: abcdefghijklmnopqrstuvwxyz;
+  alphabet: abcdefghijklmnopqrstuvwxyz-;
   delimiter: " '"
   algebra:
     __patch:

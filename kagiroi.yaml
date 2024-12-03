@@ -1,12 +1,6 @@
 algebra:
   gen_hebon_code:
     __append:
-      # ヘボン式ローマ字入力をサポートします
-      # ただし、歴史的仮名遣いに対するヘボン式ローマ字変換は基本的に提供していません
-      # 例：「zu」は「ず」にのみ変換され、「づ」には変換されません。「づ」を入力する場合は訓令式の「du」を使用してください
-      # 一部の単語については、辞書ファイルに新旧両方のヘボン式表記が登録されたため、どちらの入力でも変換可能です
-      # 例：「横綱」→「yokozuna」「yokoduna」両方も対応
-
       # ti→chi、tya→cha
       - derive/^(;?)t(?:(i)|y([aueo]))$/$1ch$2$3/
       # zi→ji、zya→jya
@@ -26,7 +20,8 @@ algebra:
       - xform/^;([a-z])(.+)$/$1$1$2/
       # 撥音「ん」を「nn」で入力可能
       - derive/^n$/nn/
-
+      # -を「q」で入力可能
+      - derive/^-$/q/
 translator:
   kana_translator:
     __patch:
@@ -34,9 +29,13 @@ translator:
       enable_completion: false
       enable_user_dict: false
       enable_sentence: true
-  base_translator:
-    __patch:
-      dictionary: kagiroi.base
-      enable_completion: true
-      enable_user_dict: true
-      enable_sentence: true
+
+key_bindings:
+  paging_with_minus_equal:
+    __append:
+      # - means Page_Up only when paging
+      - { when: paging, accept: minus, send: Page_Up }
+      - { when: has_menu, accept: equal, send: Page_Down }
+  kagiroi_swithes:
+    __append:
+      - { when: has_menu, accept: "Control+c", toggle: composition_mode}
