@@ -1,0 +1,3 @@
+[submodule "sub/kagiroi"]
+	path = sub/kagiroi
+	url = https://github.com/pfeiwu/rime-kagiroi.git

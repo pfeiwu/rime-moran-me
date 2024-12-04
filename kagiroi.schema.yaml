@@ -1,9 +1,9 @@
 schema:
   schema_id: kagiroi
-  name: かぎろい
-  version: '20241120'
+  name: カギロイ
+  version: '20241204'
   author:
-    - pfeiwu <dev.pengfei.wu@gmail.com>
+    - kuroame
   description: |
     スマートなローマ字日本語入力。
   dependencies:
@@ -12,7 +12,7 @@ schema:
 switches:
   - name: ascii_mode
     reset: 0
-    states: [ あ, abc ]
+    states: [ あ, 英字 ]
   - name: composition_mode
     states: [ 変換, 無変換 ]
   - name: full_shape
@@ -54,23 +54,17 @@ translator:
   enable_user_dict: true
 
 punctuator:
-  import_preset: default
+  __patch:
+    - kagiroi:/punctuator
 
 recognizer:
   import_preset: default
 
 kagiroi:
   preedit_view: hiragana # hiragana katakana romaji inline
-  hojo_code: enable
-  live_conversion: 
-    enable: true
-    max_syllable_length: 10
 
 key_binder:
   bindings:
     __patch:
       - kagiroi:/key_bindings/paging_with_minus_equal
       - kagiroi:/key_bindings/kagiroi_swithes
-      - key_bindings:/emacs_editing
-      - key_bindings:/move_by_word_with_tab
-      - key_bindings:/numbered_mode_switch

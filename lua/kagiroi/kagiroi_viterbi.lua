@@ -1,3 +1,11 @@
+-- kagiroi_viterbi.lua
+-- maintain a lattice for viterbi algorithm
+-- to offer contextual candidates.
+
+-- license: GPLv3
+-- version: 0.1.0
+-- author: kuroame
+
 local utf8 = require("utf8")
 local kagiroi = require("kagiroi/kagiroi")
 local Module = {
@@ -64,8 +72,8 @@ local Lattice = {
     -- section means a group of nodes of same surface_len
     -- format: begin_nodes_section_rear[pos][end_pos]
     begin_nodes_section_rear = {},
-     -- nodes that start at 1
-     -- format:prefix_nodes[surface_len]
+    -- nodes that start at 1
+    -- format:prefix_nodes[surface_len]
     prefix_nodes = {},
     end_nodes = {}, -- nodes that end at i
     -- best previous node and cost(ends at i) 
@@ -148,8 +156,9 @@ function Lattice:analyze(input)
     -- len of remaining part of the self.input should be the times we need to pop
     -- then we push every utf8 char into our Lattice
 
-    -- strategy: when the common prefix is less than the half of the #input, consider rebuilding the lattice
-    log.info("input: " .. input .. " self.input: " .. self.input)
+    -- strategy: when the common prefix is less than the half of the #input, consider rebuilding the lattice TODO
+
+    -- log.info("input: " .. input .. " self.input: " .. self.input)
     local common_prefix, new_input_remaining, old_input_remaining = kagiroi.utf8_common_prefix(input, self.input)
     -- log.info("common_prefix: " .. common_prefix.." \tnew_input_remaining: " .. new_input_remaining..
     --     "\told_input_remaining: " .. old_input_remaining)
@@ -159,15 +168,15 @@ function Lattice:analyze(input)
     self.begin_nodes[self.input_len_in_utf8 + 1] = nil
     -- self.eos_node.prev = nil
     while old_input_remaining_len > 0 do
-        log.info("------------------------------------------------------------")
-        log.info("poping ".. self.input_len_in_utf8)
+        -- log.info("------------------------------------------------------------")
+        -- log.info("poping ".. self.input_len_in_utf8)
         self:pop()
         old_input_remaining_len = old_input_remaining_len - 1
     end
 
     for uchar in kagiroi.utf8_char_iter(new_input_remaining) do
-        log.info("------------------------------------------------------------")
-        log.info("pushing: " .. uchar)
+        -- log.info("------------------------------------------------------------")
+        -- log.info("pushing: " .. uchar)
         self:push(uchar)
     end
 
@@ -225,7 +234,7 @@ end
 
 -- connect the nodes that begin at pos, updating cost, prev, and end_nodes
 function Lattice:connect(pos)
-    log.info("connecting pos: " .. pos)
+    -- log.info("connecting pos: " .. pos)
     -- iterate from the rear node of begin_nodes
     local rear_node = self.begin_nodes_rear[pos]
     local cur_node = nil
@@ -234,7 +243,7 @@ function Lattice:connect(pos)
     if not rear_node then
         cur_node = self.begin_nodes[pos]
     else
-        log.info("rear node found at pos: " .. pos .. " is " .. rear_node.candidate .. "|" .. rear_node.type)
+        -- log.info("rear node found at pos: " .. pos .. " is " .. rear_node.candidate .. "|" .. rear_node.type)
         cur_node = rear_node.bnext_iter()
     end
 
@@ -293,7 +302,7 @@ function Lattice:connect(pos)
             node = best_prev_node,
             cost = best_cost - cur_node.cost
         }
-        
+
         -- update the node
         cur_node.prev = best_prev_node
         cur_node.cost = best_cost
@@ -325,7 +334,6 @@ function Lattice:connect(pos)
             self.end_nodes[self.input_len_in_utf8 + 1] = cur_node
             -- log.info("update end_nodes at pos: " .. self.input_len_in_utf8 + 1 .. " with node: " .. cur_node.candidate.. "|" .. cur_node.type)
         end
-        
 
         ::continue::
         local next_node = cur_node.bnext_iter()
@@ -348,25 +356,30 @@ function Lattice:connect(pos)
     end
 end
 
-
 -- get the best sentence
 function Lattice:best_sentence()
     local prev = self.eos_node.prev
     if not prev then
-        log.error("eos node not connected!")
-        return nil
+        self:clear()
+        error("eos node not connected!")
     end
     local candidate = ""
     local surface = ""
-    while prev and prev ~= self.bos_node do
+    local prefix = nil
+    while prev do
         candidate = prev.candidate .. candidate
         surface = prev.surface .. surface
+        if prev.prev and prev.prev.type == "bos" then
+            prefix = prev
+            break
+        end
         prev = prev.prev
     end
     return {
         surface = surface,
         candidate = candidate,
-        cost = self.eos_node.cost
+        cost = self.eos_node.cost,
+        prefix = prev
     }
 end
 
@@ -374,30 +387,24 @@ end
 -- returns an iterator that yields nodes in the ascending order of lengh of the surface, then cost
 function Lattice:best_n_phrase(n)
     local cur_len = self.input_len_in_utf8
-    local current_index = 1  -- 用于跟踪当前在 cur_nodes 中的索引
-    -- 返回一个迭代器函数
+    local current_index = 1
     return function()
         while cur_len > 0 do
             local cur_nodes = self.prefix_nodes[cur_len]
-
-            -- 如果 cur_nodes 不为空，直接按顺序输出
             if cur_nodes and #cur_nodes > 0 then
                 if current_index <= #cur_nodes then
                     local node = cur_nodes[current_index]
-                    current_index = current_index + 1  -- 移动到下一个节点
+                    current_index = current_index + 1
                     return node
                 else
-                    -- 如果已遍历完当前的 cur_nodes，递减 cur_len 并重置索引
                     cur_len = cur_len - 1
                     current_index = 1
                 end
             else
-                -- 如果当前节点列表为空，递减 cur_len 并重置索引
                 cur_len = cur_len - 1
                 current_index = 1
             end
         end
-        -- 当 cur_len 为 0 时，返回 nil 结束迭代
         return nil
     end
 end

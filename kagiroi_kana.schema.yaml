@@ -1,16 +1,14 @@
 schema:
   schema_id: kagiroi_kana
-  name: 工具方案
-  version: '20241120'
-  author:
-    - pfeiwu <dev.pengfei.wu@gmail.com>
+  name: 補助スキーム・使用不可
+  version: '20241204'
 
 switches:
   - name: ascii_mode
     reset: 0
-    states: [ローマ字, abc ]
+    states: [ あ, 英字 ]
   - name: full_shape
-    states: [半角, 全角 ]
+    states: [ 半角, 全角 ]
   - name: ascii_punct
     states: [ 。，, ．， ]
 

@@ -1,3 +1,10 @@
+-- kagiroi_translator.lua
+-- main translator of kagiroi
+
+-- License: GPLv3
+-- version: 0.1.0
+-- author: kuroame
+
 local utf8 = require("utf8")
 local kagiroi = require("kagiroi/kagiroi")
 
@@ -94,7 +101,6 @@ function hiragana_trie:collect(text)
     return result
 end
 
-
 local Top = {}
 local viterbi = require("kagiroi/kagiroi_viterbi")
 local kHenkan = false
@@ -104,13 +110,15 @@ function Top.init(env)
     viterbi.init()
     env.hiragana_trie = hiragana_trie:new()
     env.hiragana_trie:init(env)
-    env.kanafier = Component.Translator(env.engine, Schema('kagiroi_kana'), "translator", "script_translator")
+    env.roma2hira_xlator = Component.Translator(env.engine, Schema('kagiroi_kana'), "translator", "script_translator")
+    env.hira2kata_opencc = Opencc("kagiroi_h2k.json")
+    env.hira2kata_halfwidth_opencc = Opencc("kagiroi_h2kh.json")
     env.mem = Memory(env.engine, Schema('kagiroi'))
 
     -- Update the user dict when our candidate is committed.
     env.mem:memorize(function(commit)
         -- If the commit contains multiple entries, we consider it as a sentence,
-        -- and only memorize the whole sentence.
+        -- only memorize the whole sentence.
         if #commit:get() > 1 then
             local stext = ""
             local scustom_code = ""
@@ -139,7 +147,7 @@ function Top.init(env)
             if not entry then
                 return nil
             end
-            -- print("found user dict entry", entry.text,entry.commit_count)
+            -- log.info("found user dict entry", entry.text,entry.commit_count)
             return {
                 surface = kagiroi.trim_trailing_space(entry.custom_code),
                 left_id = -1,
@@ -152,7 +160,7 @@ function Top.init(env)
 
     env.delete_notifier = env.engine.context.delete_notifier:connect(function(ctx)
         viterbi.clear()
-    end,0)
+    end, 0)
 
     env.tag = env.engine.schema.config:get_string("kagiroi/tag") or ""
 
@@ -166,50 +174,66 @@ function Top.fini(env)
     collectgarbage()
 end
 
-
 function Top.func(input, seg, env)
-    local hiragana_cand = Top.query_kanafier(input, seg, env)
+    local hiragana_cand = Top.query_roma2hira_xlator(input, seg, env)
     local composition_mode = env.engine.context:get_option("composition_mode") or kHenkan
     if hiragana_cand then
         if composition_mode == kHenkan then
-            local hiragana_text = hiragana_cand.text
-            viterbi.analyze(hiragana_text)
-            -- first, find a best match for the whole input
-            local best_sentence = viterbi.best()
-            yield(Top.lex2cand(hiragana_cand, best_sentence, env, ""))
-            -- then, find the best n matches for the input prefix
-            local best_n = viterbi.best_n_prefix(hiragana_text, -1)
-            while true do
-                local phrase = best_n()
-                if phrase then
-                    local cand = Top.lex2cand(hiragana_cand, phrase, env, "")
-                    yield(cand)
-                else
-                    break
-                end
-            end
+            Top.henkan(hiragana_cand, env)
         elseif composition_mode == kMuhenkan then
-            local hiragana_str = hiragana_cand.text
-            local hiragana_simp_cand = Candidate("kagiroi", hiragana_cand.start, hiragana_cand._end, hiragana_str, "")
-            hiragana_simp_cand.preedit = hiragana_str
-            yield(hiragana_simp_cand)
-            local katakana_str= kagiroi.hira2kata(hiragana_str)
-            local katakana_simp_cand = Candidate("kagiroi", hiragana_cand.start, hiragana_cand._end, katakana_str, "")
-            yield(katakana_simp_cand)
-            katakana_simp_cand.preedit = katakana_str
-            local katakana_half_str = kagiroi.hira2kata(hiragana_str, true)
-            local katakana_half_cand = Candidate("kagiroi", hiragana_cand.start, hiragana_cand._end, kagiroi.hira2kata(hiragana_str, true), "")
-            katakana_half_cand.preedit = katakana_half_str
-            yield(katakana_half_cand)
+            Top.muhenkan(hiragana_cand, env)
         end
     end
 end
 
--- build code, entry for rime candidate here
+function Top.henkan(hiragana_cand, env)
+    local a = env.hiragana_trie
+    if not a then
+        return
+    end
+    local hiragana_text = hiragana_cand.text
+    viterbi.analyze(hiragana_text)
+    -- firstly, find a best match for the whole input
+    local best_sentence = viterbi.best()
+    yield(Top.lex2cand(hiragana_cand, best_sentence, env, ""))
+    -- secondly, send a "contextual" phrase candidate
+    local prefix = best_sentence.prefix
+    yield(Top.lex2cand(hiragana_cand, prefix, env, ""))
+    -- finally, find the best n matches for the input prefix
+    local best_n = viterbi.best_n_prefix(hiragana_text, -1)
+    while true do
+        local phrase = best_n()
+        if phrase then
+            local cand = Top.lex2cand(hiragana_cand, phrase, env, "")
+            yield(cand)
+        else
+            break
+        end
+    end
+end
+
+function Top.muhenkan(hiragana_cand, env)
+    local hiragana_str = hiragana_cand.text
+    local hiragana_simp_cand = Candidate("kagiroi", hiragana_cand.start, hiragana_cand._end, hiragana_str, "")
+    hiragana_simp_cand.preedit = hiragana_str
+    yield(hiragana_simp_cand)
+    local katakana_str = env.hira2kata_opencc:convert(hiragana_str)
+    local katakana_cand = Candidate("kagiroi", hiragana_cand.start, hiragana_cand._end, katakana_str, "")
+    katakana_cand.preedit = katakana_str
+    yield(katakana_cand)
+    local katakana_halfwidth_str = env.hira2kata_halfwidth_opencc:convert(hiragana_str)
+    local katakana_halfwidth_cand = Candidate("kagiroi", hiragana_cand.start, hiragana_cand._end,
+        katakana_halfwidth_str, "")
+    katakana_halfwidth_cand.preedit = katakana_halfwidth_str
+    yield(katakana_halfwidth_cand)
+end
+
+-- build rime candidates
 function Top.lex2cand(hcand, lex, env, comment)
     local dest_hiragana_str = lex.surface
     local end_with_sokuon = kagiroi.utf8_sub(dest_hiragana_str, -1) == "っ"
-    local end_with_single_n = kagiroi.utf8_sub(dest_hiragana_str, -1) == "ん" and (hcand.preedit:sub(-2) == " n" or hcand.preedit == "n")
+    local end_with_single_n = kagiroi.utf8_sub(dest_hiragana_str, -1) == "ん" and
+                                  (hcand.preedit:sub(-2) == " n" or hcand.preedit == "n")
     if hcand.text == dest_hiragana_str then
         local new_entry = DictEntry(hcand:to_phrase().entry)
         new_entry.text = lex.candidate
@@ -217,12 +241,12 @@ function Top.lex2cand(hcand, lex, env, comment)
         new_entry.comment = comment
         if env.preedit_view == "hiragana" then
             new_entry.preedit = dest_hiragana_str
-            if end_with_single_n then 
+            if end_with_single_n then
                 new_entry.preedit = new_entry.preedit:gsub("ん$", "n")
             end
         elseif env.preedit_view == "katakana" then
-            new_entry.preedit = kagiroi.hira2kata(dest_hiragana_str)
-            if end_with_single_n then 
+            new_entry.preedit = env.hira2kata_opencc:convert(dest_hiragana_str) or dest_hiragana_str
+            if end_with_single_n then
                 new_entry.preedit = new_entry.preedit:gsub("ン$", "n")
             end
         elseif env.preedit_view == "inline" then
@@ -254,7 +278,7 @@ function Top.lex2cand(hcand, lex, env, comment)
             preedit = preedit:gsub("ん$", "n")
         end
     elseif env.preedit_view == "katakana" then
-        preedit = kagiroi.hira2kata(dest_hiragana_str)
+        preedit = env.hira2kata_opencc:convert(dest_hiragana_str) or dest_hiragana_str
         if end_with_single_n and _end == hcand._end then
             preedit = preedit:gsub("ン$", "n")
         end
@@ -278,13 +302,13 @@ function Top.lex2cand(hcand, lex, env, comment)
     -- just use hiragana str as custom code
     new_entry.custom_code = kagiroi.append_trailing_space(dest_hiragana_str)
     new_entry.comment = comment
-    -- print("start", start, "end", _end, "entry_num", entry_num)
+    -- log.info("start", start, "end", _end, "entry_num", entry_num)
     return Phrase(env.mem, "kagiroi", start, _end, new_entry):toCandidate()
 end
 
 -- translate romaji to hiragana
-function Top.query_kanafier(input, seg, env)
-    local xlation = env.kanafier:query(input, seg)
+function Top.query_roma2hira_xlator(input, seg, env)
+    local xlation = env.roma2hira_xlator:query(input, seg)
     if xlation then
         local nxt, thisobj = xlation:iter()
         local cand = nxt(thisobj)

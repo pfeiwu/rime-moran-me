@@ -8,7 +8,7 @@
 
 ---
 name: kagiroi_kana
-version: 20241120
+version: 20241204
 sort: by_weight
 columns:
   - text
