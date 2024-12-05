@@ -1,0 +1,4 @@
+patch:
+  paging_with_minus_equal/__append:
+    - { when: paging, accept: minus, send: Page_Up }
+    - { when: has_menu, accept: equal, send: Page_Down }
