@@ -1,3 +1,4 @@
+
 # 将辅码中的”容错码“也拼到词库文件中
 
 import re
@@ -5,6 +6,7 @@ import argparse
 from collections import defaultdict
 import string
 import unicodedata
+import os
 
 def parse_line(line):
     # 分离注释 - 注释前面应该有\t
@@ -87,7 +89,7 @@ def build_char_code_map(chars_file):
     return char_code_map
 
 
-def process_words(chars_file, words_file, output_file):
+def process_words(chars_file, words_file, output_file, simplify):
     char_code_map = build_char_code_map(chars_file)
     missing_chars = set()
 
@@ -144,17 +146,21 @@ def process_words(chars_file, words_file, output_file):
                 f_out.write(line)
             else:
                 f_out.write(line)
-
+            
     if missing_chars:
         print("\nMissing characters summary:")
         print(f"Total unique missing characters: {len(missing_chars)}")
         print("Missing characters:", ', '.join(sorted(missing_chars)))
+    if simplify:
+        # opencc -c opencc/moran_t2s.json -i $1.bak -o $1
+        os.system(f"opencc -c opencc/moran_t2s.json -i {output_file} -o {output_file}.bak")
+        os.replace(f"{output_file}.bak", output_file)
 
 def main(args):
     if args.type == 'chars':
         process_chars(args.source, args.ouput)
     elif args.type == 'words':
-        process_words(args.charsfile, args.source, args.ouput)
+        process_words(args.charsfile, args.source, args.ouput, args.simplify)
     else:
         raise ValueError(f"Invalid type: {args.type}")
 
@@ -164,5 +170,6 @@ if __name__ == '__main__':
     parser.add_argument('--source', '-s')
     parser.add_argument('--ouput', '-o')
     parser.add_argument('--type', '-t')
+    parser.add_argument('--simplify', '-S', action='store_true')
     args = parser.parse_args()
     main(args)
