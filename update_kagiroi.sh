@@ -6,6 +6,6 @@ echo done
 
 echo replacing existing files...
 cd sub/kagiroi
-find ./ -type f -name 'kagiroi*' -exec cp --parents {} ../../ \;
+find ./ -type f -name 'kagiroi*' -exec rsync -R {} ../../ \;
 echo done
 
