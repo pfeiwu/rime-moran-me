@@ -117,23 +117,40 @@ function Top.init(env)
 
     -- Update the user dict when our candidate is committed.
     env.mem:memorize(function(commit)
-        -- If the commit contains multiple entries, we consider it as a sentence,
-        -- only memorize the whole sentence.
+        local function save_phrase(dictentry)
+            local text, left_id, right_id = string.match(dictentry.text, "(.+)|(%d+) (%d+)")
+            if text and left_id and right_id then
+                env.mem:update_userdict(dictentry, 1, "")
+            end
+            return text, left_id, right_id
+        end
+        
+        -- If the commit contains multiple entries, we consider it as a sentence
+        -- and its left id is the same as the first entry, right id is the same as the last entry.
         if #commit:get() > 1 then
             local stext = ""
             local scustom_code = ""
+            local sleft_id = -1
+            local sright_id = -1
             for i, dictentry in ipairs(commit:get()) do
-                stext = stext .. dictentry.text
+                local text, left_id, right_id = save_phrase(dictentry)
+                if sleft_id == -1 and left_id then
+                    sleft_id = left_id
+                end
+                if right_id then
+                    sright_id = right_id
+                end
+                stext = stext .. text
                 scustom_code = scustom_code .. kagiroi.trim_trailing_space(dictentry.custom_code)
             end
             local sentry = DictEntry()
-            sentry.text = stext
+            sentry.text = stext .. "|" .. sleft_id .. " " .. sright_id
             sentry.custom_code = kagiroi.append_trailing_space(scustom_code)
             env.mem:update_userdict(sentry, 1, "")
         else
             local dictentry = commit:get()[1]
             if dictentry.text then
-                env.mem:update_userdict(dictentry, 1, "")
+                save_phrase(dictentry)
             end
         end
     end)
@@ -147,14 +164,24 @@ function Top.init(env)
             if not entry then
                 return nil
             end
-            -- log.info("found user dict entry", entry.text,entry.commit_count)
-            return {
-                surface = kagiroi.trim_trailing_space(entry.custom_code),
-                left_id = -1,
-                right_id = -1,
-                candidate = entry.text,
-                cost = 50 / (entry.commit_count + 1)
-            }
+            local candidate, left_id, right_id = string.match(entry.text, "(.+)|(%d+) (%d+)")
+            if candidate and left_id and right_id then
+                return {
+                    surface = kagiroi.trim_trailing_space(entry.custom_code),
+                    left_id = tonumber(left_id),
+                    right_id = tonumber(right_id),
+                    candidate = candidate,
+                    cost = 1000 / (entry.commit_count + 1)
+                }
+            else
+                return {
+                    surface = kagiroi.trim_trailing_space(entry.custom_code),
+                    left_id = -1,
+                    right_id = -1,
+                    candidate = entry.text,
+                    cost = 50 / (entry.commit_count + 1)
+                }
+            end
         end
     end)
 
@@ -207,8 +234,7 @@ function Top.henkan(hiragana_cand, env)
     while true do
         local phrase = best_n()
         if phrase then
-            local cand = Top.lex2cand(hiragana_cand, phrase, env, "")
-            yield(cand)
+            yield(Top.lex2cand(hiragana_cand, phrase, env, ""))
         else
             break
         end
@@ -253,7 +279,7 @@ function Top.lex2cand(hcand, lex, env, comment)
         -- SPECIAL CASE: if the dest_hiragana_str end with っ, _end should be in the middle of sokuon
         -- eg. 「a tta」 , _end should be at the first t to separate the tta to t|ta
         if end_with_sokuon then
-            _end = Top.find_end(hcand.preedit, hcand.start, hcand._end, syllable_num -1) + 1
+            _end = Top.find_end(hcand.preedit, hcand.start, hcand._end, syllable_num - 1) + 1
         else
             _end = Top.find_end(hcand.preedit, hcand.start, hcand._end, syllable_num)
         end
@@ -288,14 +314,16 @@ function Top.lex2cand(hcand, lex, env, comment)
             preedit = preedit:gsub("ん$", "n"):gsub("ン$", "n")
         end
     end
-    
+
     local new_entry = DictEntry()
     new_entry.preedit = preedit
-    new_entry.text = lex.candidate
+    new_entry.text = lex.candidate .. "|" .. lex.left_id .. " " .. lex.right_id
     -- just use hiragana str as custom code
     new_entry.custom_code = kagiroi.append_trailing_space(dest_hiragana_str)
-    new_entry.comment = comment
-    return Phrase(env.mem, "kagiroi", start, _end, new_entry):toCandidate()
+    local new_cand = Phrase(env.mem, "kagiroi_lex", start, _end, new_entry):toCandidate()
+    -- use a zero-width space to hide the comment
+    -- cause inherit_comment won't work when it is set to false
+    return ShadowCandidate(new_cand, "kagiroi", lex.candidate, comment)
 end
 
 -- find the end position for the candidate
@@ -303,7 +331,7 @@ function Top.find_end(h_preedit, h_start, h_end, syllable_num)
     if syllable_num <= 0 then
         return h_start
     end
-    local n = kagiroi.find_nth_char(h_preedit ," ", syllable_num)
+    local n = kagiroi.find_nth_char(h_preedit, " ", syllable_num)
     if n then
         return n - syllable_num + h_start
     else
