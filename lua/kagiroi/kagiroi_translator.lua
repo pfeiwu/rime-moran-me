@@ -111,6 +111,7 @@ function Top.init(env)
     env.hiragana_trie = hiragana_trie:new()
     env.hiragana_trie:init(env)
     env.roma2hira_xlator = Component.Translator(env.engine, Schema('kagiroi_kana'), "translator", "script_translator")
+    env.pseudo_xlator = Component.Translator(env.engine, Schema('kagiroi'), "translator", "script_translator")
     env.hira2kata_opencc = Opencc("kagiroi_h2k.json")
     env.hira2kata_halfwidth_opencc = Opencc("kagiroi_h2kh.json")
     env.mem = Memory(env.engine, Schema('kagiroi'))
@@ -205,6 +206,10 @@ function Top.func(input, seg, env)
     if env.tag ~= "" and not seg:has_tag(env.tag) then
         return
     end
+    -- query pseudo translator to commit pending transaction
+    -- in the comming version of librime, we can use Memory:finish_session()
+    -- we use this workaround since most frontends have not been updated yet
+    env.pseudo_xlator:query(input, seg)
     local hiragana_cand = Top.query_roma2hira_xlator(input, seg, env)
     local composition_mode = env.engine.context:get_option("composition_mode") or kHenkan
     if hiragana_cand then
@@ -317,12 +322,11 @@ function Top.lex2cand(hcand, lex, env, comment)
 
     local new_entry = DictEntry()
     new_entry.preedit = preedit
+    -- save the lex data in entry text
     new_entry.text = lex.candidate .. "|" .. lex.left_id .. " " .. lex.right_id
     -- just use hiragana str as custom code
     new_entry.custom_code = kagiroi.append_trailing_space(dest_hiragana_str)
     local new_cand = Phrase(env.mem, "kagiroi_lex", start, _end, new_entry):toCandidate()
-    -- use a zero-width space to hide the comment
-    -- cause inherit_comment won't work when it is set to false
     return ShadowCandidate(new_cand, "kagiroi", lex.candidate, comment)
 end
 
